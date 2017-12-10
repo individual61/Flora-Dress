@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include <FastLED.h>
 
 #define CORRECTION TypicalLEDStrip
@@ -12,10 +13,30 @@
 CRGB leds[NUM_LEDS];
 CRGB backled[1];
 
+CRGB backledcolor = 0x601040;
 CRGB color = 0x601040;
+CHSV hsvcolor = CHSV(0, 255, 255);
+
+uint8_t memory = 0;
+int address = 0;
 
 void setup()
 {
+  memory = EEPROM.read(address);
+  memory++;
+  if (memory == 2)
+  {
+    memory = 0;
+  }
+  EEPROM.write(address, memory);
+  if (memory == 0)
+  {
+    color = 0xFF0000;
+  }
+  if (memory == 1)
+  {
+    color = 0x0000FF;
+  }
 
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS)
       .setCorrection(CORRECTION);
@@ -28,23 +49,45 @@ void setup()
   FastLED.setBrightness(BRIGHTNESS);
   FastLED.clear();
 
-  backled[0] = color;
+  backled[0] = backledcolor;
 
   FastLED.show();
 }
 int index = 0;
 void loop()
 {
+  /*
+// Turn on each separately white for one second
   index++;
-  if (index == NUM_LEDS)
-  {
-    index = 0;
-  };
+    if (index == NUM_LEDS)
+    {
+      index = 0;
+    };
+    leds[index] = CRGB(255, 255, 255);
+    FastLED.show();
+    FastLED.delay(1000);
+    leds[index] = CRGB(0, 0, 0);
+    FastLED.show();
+  */
 
-  leds[index] = CRGB(255, 255, 255);
+  /*
+    // Cycle all through wheel
+    index++;
+    if (index == 255)
+    {
+      index = 0;
+    };
+    hsvcolor = CHSV(index, 255, 255);
+    fill_solid(leds, NUM_LEDS, hsvcolor);
+    FastLED.delay(20);
+  */
 
-  FastLED.show();
+  /*
+    // Each powerup use different color
+    fill_solid(leds, NUM_LEDS, color);
+    FastLED.delay(1000);
+    */
+
+  fill_solid(leds, NUM_LEDS, color);
   FastLED.delay(1000);
-  leds[index] = CRGB(0, 0, 0);
-  FastLED.show();
 }
